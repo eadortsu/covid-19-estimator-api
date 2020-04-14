@@ -12,28 +12,15 @@ class EstimatorController extends Controller
     public function index(Request $request)
     {
 
+        $log = Log::create([
+            'method' => $_SERVER["REQUEST_METHOD"],
+            'path' => '/api/v1/on-covid-19/json',
+            'status' => '200',
+            'respond_time' => round(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 3) * 1000,
+        ]);
         return $this->covid19ImpactEstimator($request);
 
     }
-
-    public function xml(Request $request)
-    {
-
-
-        $data = $this->covid19ImpactEstimator($request);
-
-        return response($data, 200)
-            ->header('Content-Type', 'text/xml');
-
-    }
-
-    public function logs()
-    {
-
-        return Log::all();
-
-    }
-
 
     private function covid19ImpactEstimator($data)
     {
@@ -93,6 +80,21 @@ class EstimatorController extends Controller
         return $output;
     }
 
+    private function array_to_object($array)
+    {
+        $obj = new Log();
+        foreach ($array as $k => $v) {
+            if (strlen($k)) {
+                if (is_array($v)) {
+                    $obj->{$k} = $this->array_to_object($v); //RECURSION
+                } else {
+                    $obj->{$k} = $v;
+                }
+            }
+        }
+        return $obj;
+    }
+
     private function normaliseDuration($periodType, $timeToElapse)
     {
         $days = 0;
@@ -117,19 +119,55 @@ class EstimatorController extends Controller
         return $days;
     }
 
-    private function array_to_object($array)
+    public function json(Request $request)
     {
-        $obj = new Log();
-        foreach ($array as $k => $v) {
-            if (strlen($k)) {
-                if (is_array($v)) {
-                    $obj->{$k} = $this->array_to_object($v); //RECURSION
-                } else {
-                    $obj->{$k} = $v;
-                }
-            }
+
+        $log = Log::create([
+            'method' => $_SERVER["REQUEST_METHOD"],
+            'path' => '/api/v1/on-covid-19/json',
+            'status' => '200',
+            'respond_time' => round(microtime(true) - $_SERVER['REQUEST_TIME'], 3) * 1000
+        ]);
+        return $this->covid19ImpactEstimator($request);
+
+    }
+
+    public function xml(Request $request)
+    {
+
+
+        $log = Log::create([
+            'method' => $_SERVER["REQUEST_METHOD"],
+            'path' => '/api/v1/on-covid-19/json',
+            'status' => '200',
+            'respond_time' => round(microtime(true) - $_SERVER['REQUEST_TIME'], 3) * 1000
+        ]);
+        $data = $this->covid19ImpactEstimator($request);
+
+        return response($data, 200)
+            ->header('Content-Type', 'text/xml');
+
+    }
+
+    public function logs()
+    {
+        $logs = Log::all();
+        $log = Log::create([
+            'method' => $_SERVER["REQUEST_METHOD"],
+            'path' => '/api/v1/on-covid-19/logs',
+            'status' => '200',
+            'respond_time' => round(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 3) * 1000,
+        ]);
+
+        $contents = "";
+
+        foreach ($logs as $log) {
+            $contents .= $log->method . " " . $log->path . " " . $log->status . " " . $log->respond_time . "ms\n";
         }
-        return $obj;
+
+        return response($contents, 200)
+            ->header('Content-Type', 'text/plain');
+
     }
 
     private function object_to_array($array)

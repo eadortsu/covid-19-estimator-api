@@ -19,6 +19,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::any('/v1/on-covid-19','EstimatorController@index');
-Route::any('/v1/on-covid-19/json','EstimatorController@index');
+Route::any('/v1/on-covid-19/json','EstimatorController@json');
 Route::any('/v1/on-covid-19/xml','EstimatorController@xml');
 Route::any('/v1/on-covid-19/logs','EstimatorController@logs');
