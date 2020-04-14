@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Log;
 use Illuminate\Http\Request;
+use Spatie\ArrayToXml\ArrayToXml;
 
 class EstimatorController extends Controller
 {
@@ -144,8 +145,9 @@ class EstimatorController extends Controller
         ]);
         $data = $this->covid19ImpactEstimator($request);
 
-        return response($data, 200)
-            ->header('Content-Type', 'text/xml');
+        $data = $this->object_to_array($data);
+        return response(ArrayToXml::convert($data), 200)
+            ->header('Content-Type', 'application/xml');
 
     }
 
