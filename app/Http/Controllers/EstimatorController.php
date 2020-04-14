@@ -10,18 +10,7 @@ class EstimatorController extends Controller
 {
     //
 
-    public function index(Request $request)
-    {
 
-        $log = Log::create([
-            'method' => $_SERVER["REQUEST_METHOD"],
-            'path' => '/api/v1/on-covid-19/json',
-            'status' => '200',
-            'respond_time' => round(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 3) * 1000,
-        ]);
-        return $this->covid19ImpactEstimator($request);
-
-    }
 
     private function covid19ImpactEstimator($data)
     {
@@ -120,6 +109,18 @@ class EstimatorController extends Controller
         return $days;
     }
 
+    public function index(Request $request)
+    {
+
+        $log = Log::create([
+            'method' => $_SERVER["REQUEST_METHOD"],
+            'path' => '/api/v1/on-covid-19/json',
+            'status' => '200',
+            'respond_time' => round(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 3) * 1000,
+        ]);
+        return $this->covid19ImpactEstimator($request);
+
+    }
     public function json(Request $request)
     {
 
@@ -145,8 +146,7 @@ class EstimatorController extends Controller
         ]);
         $data = $this->covid19ImpactEstimator($request);
 
-        $data = $this->object_to_array($data);
-        return response(ArrayToXml::convert($data), 200)
+        return response(ArrayToXml::convert($data->toArray()), 200)
             ->header('Content-Type', 'application/xml');
 
     }
